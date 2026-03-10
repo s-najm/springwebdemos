@@ -8,7 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.annotation.GetExchange;
@@ -25,8 +28,20 @@ public class WebApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(WebApplication.class, args);
 	}
+@Controller
+@ResponseBody
+class UsersController{
+		private final DeclarativeUsersClient usersClient;
 
+    UsersController(DeclarativeUsersClient usersClient) {
+        this.usersClient = usersClient;
+    }
+	@GetMapping("/users")
+	Collection<User> users(){
+		return this.usersClient.users();
+	}
 
+}
 
 	//https://jsonplaceholder.typicode.com/users
 	record User(int id, String name, String username, String email, Address address) {
