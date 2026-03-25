@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,24 +24,60 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @SpringBootApplication
 public class WebApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(WebApplication.class, args);
 	}
+
+	@Component
+	class UserModelAssembler implements RepresentationModelAssembler<User, EntityModel<User>> {
+
+		@Override
+		public EntityModel<User> toModel(User entity) {
+			var controller=HateoasUsersController.class;
+			var self=linkTo(methodOn(controller).all()).withRel("all");
+			var one=linkTo(methodOn(controller).one(entity.id())).withSelfRel();
+			return EntityModel.of(entity,self,one);
+		}
+	}
+//HATEAOS
+
+
+
+
+
 @Controller
 @ResponseBody
-class UsersController{
+class HateoasUsersController{
 		private final DeclarativeUsersClient usersClient;
-
-    UsersController(DeclarativeUsersClient usersClient) {
+        private final UserModelAssembler userModelAssembler;
+	HateoasUsersController(DeclarativeUsersClient usersClient, UserModelAssembler userModelAssembler) {
         this.usersClient = usersClient;
+		this.userModelAssembler = userModelAssembler;
     }
+
+
+	@GetMapping("/users/{id}")
+	EntityModel<User> one(@PathVariable int id){
+		return this.userModelAssembler.toModel(this.usersClient.user(id));
+	}
+
+	@GetMapping("/users")
+	Collection<EntityModel<User>> all(){
+		return this.userModelAssembler.toCollectionModel(usersClient.users()).getContent();
+	}
+	/*
 	@GetMapping("/users")
 	Collection<User> users(){
 		return this.usersClient.users();
 	}
+	*/
+
 
 }
 
