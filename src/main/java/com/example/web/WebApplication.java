@@ -11,6 +11,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -29,6 +30,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @SpringBootApplication
 public class WebApplication {
+
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(WebApplication.class, args);
@@ -79,6 +82,20 @@ class HateoasUsersController{
 	*/
 
 
+}
+@Controller
+class MvcController{
+		private DeclarativeUsersClient usersClient;
+
+	public MvcController(DeclarativeUsersClient usersClient) {
+		this.usersClient = usersClient;
+	}
+
+	@GetMapping("/users.html")
+	    String mvc(Model model){
+			model.addAttribute("users",usersClient.users());
+			return "users";
+		}
 }
 
 	//https://jsonplaceholder.typicode.com/users
